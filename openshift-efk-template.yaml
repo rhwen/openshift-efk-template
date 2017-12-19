@@ -1,0 +1,991 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: openshift-efk-template
+  annotations:
+    description: ""
+    iconClass: "icon-openshift"
+    tags: "efk, logging, openshift"
+objects:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: aggregated-logging-elasticsearch
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: logging-elasticsearch
+  data:
+    admin-ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyakNDQWNLZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpnME9Wb1hEVEl5TURneE1EQTFNamcxTUZvdwpIakVjTUJvR0ExVUVBeE1UYkc5bloybHVaeTF6YVdkdVpYSXRkR1Z6ZERDQ0FTSXdEUVlKS29aSWh2Y05BUUVCCkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUx6RFg1ZmNMRU9GbHRXQ1BnRjF4UldYNUxJOUpFdlljcWVQZEMxa1NGQVUKRWtJRTJUcStWRk01dHp5TVNJenk0SVJPMkM3TFZHVWtSeDRHR2NvMUtpRGVoQ2IwWGFrcHV5dUhaWllnK0tCaQpQRldQS1dNLzNYVHpyd2laNWl0QjVhZ0doWWZzVkZ2eERVS3FheWF1Y2RSUlkzTXlZbkdLUkVycllPWTVIV0NWCkRzWVVrLzBhV2JVSGEvTW10MEZId1ZHUytXWlJqR1Bha3pibW9pUnFWYkpmYmQxT0ptTDY0UGxSNnd5K3cxWFQKaHVVbjRWTGtBN2RTcVVHckxFV0RKaXE0THRVL2Nyd0ZkM0tlMDlhL3lLQU9iNGVONm1xZi9Rd3IvQmcwUklzOApWSEl5U28rQ1ZQeThiN0kvbXNzUzdJcy9OTFc2dWp0dUJTSTZxYjlYNnUwQ0F3RUFBYU1qTUNFd0RnWURWUjBQCkFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGaTcKYktrZ2hpREJsNVpjWXBudHgzNm4zUmdMekV0Y0lLNDB1WTJKaHBtUlptS1VXRlNRUllkd2M4M2dsM2tzUE1ucgpmdDlkcXNSSzhEeDV0REZQR0xDNHJObWpUQkxGZ05waGZCL1dtRHE5eW81OGtsY0hSZnMwWnppMEJFc2c3cis2CjhPbW5yVzlFcjNvZ2tMbmttRXN0NjQ1dHBmOVhSZU82NXExOEd0dEVyaWpoVWYxa1pzZnF2WDh6cWRZOVpsWEgKd3puR0tERkZtSm1vTEN6RHN1dkZwNlpjWitmemc5Qm42bFVLQ3Fic0NxODRDRmhkUTFxWWtzSm13ZE5HUnFnZQp1NWd2ekNuNlNqMGdSTmtpV0pBdHpweXFBR0ZoSzg1L2xReVVReWs0eHh3WWQ4ekNiQmtvdllPY3QyN1hxRkR1CitjYXpkZ2VvYk1OSGppMCtIamc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    admin-cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURQRENDQWlTZ0F3SUJBZ0lCQlRBTkJna3Foa2lHOXcwQkFRVUZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpreE5sb1hEVEU1TURneE1UQTFNamt4TmxvdwpQVEVRTUE0R0ExVUVDZ3dIVEc5bloybHVaekVTTUJBR0ExVUVDd3dKVDNCbGJsTm9hV1owTVJVd0V3WURWUVFECkRBeHplWE4wWlcwdVlXUnRhVzR3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRREkKVVhXTnQwOVFzZUV5bmdYQ08wWlVka1YvMWM1UWlrRXpqYU5MLytCY3d3MVhkSzEwU3FtbmZlWm9tL1I5a2t5Nwo4OEo3TUVKVkJkUzJTYXlBditTeC9NVTFud3JMcEo0R2ZocGJwRzZsSUxnQkhEcEMzbjN0RUt0cWV2WXp4NkFYCkNEbTBIa3dJVXAvVWlCU3ZNNWVjejZEeGJBZXRiU2drT1FSS3FxcFV5OXJuOUh4dHdraVljUG1GRzl4TUF6TmwKMk1jWGRZY3IvRlByRDZSbEZ4ZlBvOW5xOEpPTkdkWXNBK1BJNU9RNTBvdUZvWnlZaUJleDRCRmhQSFZRQkM3Mwppb05kNlZ6Z0tOeldEbnhJM21zVzVFRDF1TmdPMDA4K25KR3BiSEJTV0xSTmUrckJSdnFqdkdyNmV6aHFrTzNIClEySG1mclZjRXFJNVFwb05VQnhmQWdNQkFBR2paakJrTUE0R0ExVWREd0VCL3dRRUF3SUZvREFKQmdOVkhSTUUKQWpBQU1CMEdBMVVkSlFRV01CUUdDQ3NHQVFVRkJ3TUJCZ2dyQmdFRkJRY0RBakFkQmdOVkhRNEVGZ1FVU3IxRwpyeVFnNUdJZmFTd09oV0ZPajZyQmRtd3dDUVlEVlIwakJBSXdBREFOQmdrcWhraUc5dzBCQVFVRkFBT0NBUUVBClBTZ09YODBKNjVka2YzT1FNV2dzU2RQa3hHRnJtcnRJNndYZzlzenN2UVZhejhkUm9XdEJzcXdITnFVZzV1dmMKN25RVFYvL01BWk9BS2tkWHhEU3VHM0ZrcEdlcU1ybDBiajdUSHl6SkxtcEVIdXloWnF0ZEVJSjloVURVUWpWcQpEbmI4N0JLSE9oZG5mYU5wZlNrN0pZN2o3N09uMUVuWlk0ck04aTJoaXBnZzlYNEhvNWltT29iRTd6WlVGaGwrCkFNL3VsUUhseVBXc3dBRXhSNW54YlkrSUZUb1JJYkVRMW5kKzdZZGl3OG14QXpNTEl0QlF1elZmTEYzbGRPWHQKTUtldVBYK1llY1NqN2N3Z2p4QmZlZ2xmenkwOHBNUWVOUzVPQWdzSFM2ZTJ3cmg1SGltRDlCazhMK0lnbFp4ZwpYcWNaazdBdGtTQ0c1OUtSd3VETmxBPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    admin-key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRElVWFdOdDA5UXNlRXkKbmdYQ08wWlVka1YvMWM1UWlrRXpqYU5MLytCY3d3MVhkSzEwU3FtbmZlWm9tL1I5a2t5Nzg4SjdNRUpWQmRTMgpTYXlBditTeC9NVTFud3JMcEo0R2ZocGJwRzZsSUxnQkhEcEMzbjN0RUt0cWV2WXp4NkFYQ0RtMEhrd0lVcC9VCmlCU3ZNNWVjejZEeGJBZXRiU2drT1FSS3FxcFV5OXJuOUh4dHdraVljUG1GRzl4TUF6TmwyTWNYZFljci9GUHIKRDZSbEZ4ZlBvOW5xOEpPTkdkWXNBK1BJNU9RNTBvdUZvWnlZaUJleDRCRmhQSFZRQkM3M2lvTmQ2VnpnS056VwpEbnhJM21zVzVFRDF1TmdPMDA4K25KR3BiSEJTV0xSTmUrckJSdnFqdkdyNmV6aHFrTzNIUTJIbWZyVmNFcUk1ClFwb05VQnhmQWdNQkFBRUNnZ0VBTjJwaGpNelRRazJUTVArS05FdFZqM1FRa2ViQjVvSDR1NXhKT25NVXpGU2gKVWpwUzZjTGw0Qkh5TmFvL0hxWGtXSEo4c0x1Ty9ocFkxL3pWbmVCNEVjME5lV0lBQ0lvSHRXQVpScFRjanczWQpHV2FIcjR3QlpoMmdiaHFLRlpUNThxVXg0V1FvUUgwcS9nNlBPbENaZHFYeHJoZm1uOUY4czFpYW1WVlJQWmVSCjFlYlNNeFMwTVRPU1hldkFWV3d1QmdQR1N1dEFTdDBVWFRQeTJDbWJmSjhCVDlSM25RamxlN1VUN3pDMFREUnkKWWMwVWk4MzBCMjJ6RmVIOWtPQUVIQVlLNjJDRDA3V0s0endNdkdYT0xNUUY2UE1oUFVmOEpmT3JHamkyWStBNgpiUFRyUHZJaWZnb3pRMEhYdVVGdGJhbHNlRnIveHdWUHNEYjluYkJHVVFLQmdRRDBUMm5LNzA4ckhRd1lwV3oxCnN0Vk04am0rYUtCU0s1S3ZOZHIzSzUxK05Ud2JWVEZaT2pXdHRjdkZDbm4rRkVya29ZYUQ5MkxjNHVreENaUmEKZUFxelkyVnJiL1ZRZzIvazRVRkcyTWdDZm5HWUZRZUs3enp6Z3lBZzZ1WW5wb1VERlYwMGdDNlJ3RnUrdkJ6SwpsS3dHUFMwc1RLSzBYQXMrVGhvcGVDTWZBd0tCZ1FEUjV5Nm4rbkRkdnB3WU8zYU9zb2d4WHZPNUNQUmxTbzJGCkM5ZlplY3pxRmRaa1FwVDFyWjduc3FWYi9sK050bnBRYWtpekh1U3NvRmZZenQ5dmpZbmN5Q2xtcE5qQVFEeWUKQnc5Wkx4azVlM2hwUkRLRzdRVURPa0tlQStuK0RURCtuQktDV2FVajFuWkNKdHR2a2lnL2srNC9TbVh0dGlvawo4dkZZVUlaUWRRS0JnSG1ld3VxY1lVdjBKTjVzRTZib2hOak9TTUtxTVExVzFhblZaSkRoTElEMG5WeDU5NXdVCnB6NDNueDRURGhIWEprVlV4N01RUnkzdzQrZGVmblRmQjJ5d0VYLy9keDdDbjhSUUFuL3pVUFkwM2ZXNG1rMm0KdFRBQVdkRXBQclFFYUhqVmZOV3k3ZnZ1eDMxWEJmb3ZNc2ZVVXBXWC9QTk9VdWFNV09mRi82M2pBb0dBZGllMwplTEVlTllSbFk3S2RReWcyUit4V0wzTmQ5MktuRlJ5Y2pYdmxvR05ZZ3FtRUptTnNUcXFlTUpHWkFqR1UybzFwCmpRSzM0SUNGMHJKb3plZVRraWRPUHN4T2dySG1MV0oxL2xMbjFSYXVxanJNWW0wclpDeTRjVEJzMkNoZXl3UFoKMjJ4UTdFSjk0VEQwVnZLa0cxM1BQK3RHUXpCR3V2UFNiVTh1dkQwQ2dZRUF4ZmY4cExpNmV0TG5zakIrZld6egplOE5VeFhqRzFuQUVBS1g2OVJ5UW1hZkh5NnYwemxoZnV1dE5BeTRRSjdmbEpsbWtkODlBUURpR3ZPTEc2RHk2CjBTOXg0R3hVbUc3Rk9UM29UT2pXUmM2a0dmRFBrZCtZZTlUeDg1UXE5OTVYYjQxVTV4T040OVBPaWdSUW1MSGkKNWFzVlkvaVBpTmhHNE9jK2w2R1dKWGs9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+    admin.jks: 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
+    key: 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
+    searchguard.key: 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
+    searchguard.truststore: /u3+7QAAAAIAAAABAAAAAgAGc2lnLWNhAAABXc/E2kcABVguNTA5AAAC3jCCAtowggHCoAMCAQICAQEwDQYJKoZIhvcNAQELBQAwHjEcMBoGA1UEAxMTbG9nZ2luZy1zaWduZXItdGVzdDAeFw0xNzA4MTEwNTI4NDlaFw0yMjA4MTAwNTI4NTBaMB4xHDAaBgNVBAMTE2xvZ2dpbmctc2lnbmVyLXRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC8w1+X3CxDhZbVgj4BdcUVl+SyPSRL2HKnj3QtZEhQFBJCBNk6vlRTObc8jEiM8uCETtguy1RlJEceBhnKNSog3oQm9F2pKbsrh2WWIPigYjxVjyljP910868ImeYrQeWoBoWH7FRb8Q1CqmsmrnHUUWNzMmJxikRK62DmOR1glQ7GFJP9Glm1B2vzJrdBR8FRkvlmUYxj2pM25qIkalWyX23dTiZi+uD5UesMvsNV04blJ+FS5AO3UqlBqyxFgyYquC7VP3K8BXdyntPWv8igDm+Hjepqn/0MK/wYNESLPFRyMkqPglT8vG+yP5rLEuyLPzS1uro7bgUiOqm/V+rtAgMBAAGjIzAhMA4GA1UdDwEB/wQEAwICpDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBYu2ypIIYgwZeWXGKZ7cd+p90YC8xLXCCuNLmNiYaZkWZilFhUkEWHcHPN4Jd5LDzJ637fXarESvA8ebQxTxiwuKzZo0wSxYDaYXwf1pg6vcqOfJJXB0X7NGc4tARLIO6/uvDpp61vRK96IJC55JhLLeuObaX/V0XjuuatfBrbRK4o4VH9ZGbH6r1/M6nWPWZVx8M5xigxRZiZqCwsw7LrxaemXGfn84PQZ+pVCgqm7AqvOAhYXUNamJLCZsHTRkaoHruYL8wp+ko9IETZIliQLc6cqgBhYSvOf5UMlEMpOMccGHfMwmwZKL2DnLdu16hQ7vnGs3YHqGzDR44tPh44opfcqFXUsWVWd2HO2AzRC/1zbzw=
+    truststore: /u3+7QAAAAIAAAABAAAAAgAGc2lnLWNhAAABXc/E2kcABVguNTA5AAAC3jCCAtowggHCoAMCAQICAQEwDQYJKoZIhvcNAQELBQAwHjEcMBoGA1UEAxMTbG9nZ2luZy1zaWduZXItdGVzdDAeFw0xNzA4MTEwNTI4NDlaFw0yMjA4MTAwNTI4NTBaMB4xHDAaBgNVBAMTE2xvZ2dpbmctc2lnbmVyLXRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC8w1+X3CxDhZbVgj4BdcUVl+SyPSRL2HKnj3QtZEhQFBJCBNk6vlRTObc8jEiM8uCETtguy1RlJEceBhnKNSog3oQm9F2pKbsrh2WWIPigYjxVjyljP910868ImeYrQeWoBoWH7FRb8Q1CqmsmrnHUUWNzMmJxikRK62DmOR1glQ7GFJP9Glm1B2vzJrdBR8FRkvlmUYxj2pM25qIkalWyX23dTiZi+uD5UesMvsNV04blJ+FS5AO3UqlBqyxFgyYquC7VP3K8BXdyntPWv8igDm+Hjepqn/0MK/wYNESLPFRyMkqPglT8vG+yP5rLEuyLPzS1uro7bgUiOqm/V+rtAgMBAAGjIzAhMA4GA1UdDwEB/wQEAwICpDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBYu2ypIIYgwZeWXGKZ7cd+p90YC8xLXCCuNLmNiYaZkWZilFhUkEWHcHPN4Jd5LDzJ637fXarESvA8ebQxTxiwuKzZo0wSxYDaYXwf1pg6vcqOfJJXB0X7NGc4tARLIO6/uvDpp61vRK96IJC55JhLLeuObaX/V0XjuuatfBrbRK4o4VH9ZGbH6r1/M6nWPWZVx8M5xigxRZiZqCwsw7LrxaemXGfn84PQZ+pVCgqm7AqvOAhYXUNamJLCZsHTRkaoHruYL8wp+ko9IETZIliQLc6cqgBhYSvOf5UMlEMpOMccGHfMwmwZKL2DnLdu16hQ7vnGs3YHqGzDR44tPh44opfcqFXUsWVWd2HO2AzRC/1zbzw=
+  type: Opaque
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: logging-elasticsearch
+  data:
+    elasticsearch.yml: |
+      cluster:
+        name: ${CLUSTER_NAME}
+
+      script:
+        inline: on
+        indexed: on
+
+      index:
+        number_of_shards: 1
+        number_of_replicas: 0
+        unassigned.node_left.delayed_timeout: 2m
+        translog:
+          flush_threshold_size: 256mb
+          flush_threshold_period: 5m
+
+      node:
+        master: true
+        data: true
+        max_local_storage_nodes: 1
+
+      network:
+        host: 0.0.0.0
+
+      cloud:
+        kubernetes:
+          service: ${SERVICE_DNS}
+          namespace: ${NAMESPACE}
+
+      discovery:
+        type: kubernetes
+        zen.ping.multicast.enabled: false
+        zen.minimum_master_nodes: 1
+
+      gateway:
+        expected_master_nodes: ${NODE_QUORUM}
+        recover_after_nodes: ${RECOVER_AFTER_NODES}
+        expected_nodes: ${RECOVER_EXPECTED_NODES}
+        recover_after_time: ${RECOVER_AFTER_TIME}
+
+      io.fabric8.elasticsearch.authentication.users: ["system.logging.kibana", "system.logging.fluentd", "system.logging.curator", "system.admin"]
+      io.fabric8.elasticsearch.kibana.mapping.app: /usr/share/elasticsearch/index_patterns/com.redhat.viaq-openshift.index-pattern.json
+      io.fabric8.elasticsearch.kibana.mapping.ops: /usr/share/elasticsearch/index_patterns/com.redhat.viaq-openshift.index-pattern.json
+      io.fabric8.elasticsearch.kibana.mapping.empty: /usr/share/elasticsearch/index_patterns/com.redhat.viaq-openshift.index-pattern.json
+
+      openshift.config:
+        use_common_data_model: true
+        project_index_prefix: "project"
+        time_field_name: "@timestamp"
+
+      openshift.searchguard:
+        keystore.path: /etc/elasticsearch/secret/admin.jks
+        truststore.path: /etc/elasticsearch/secret/searchguard.truststore
+
+      openshift.operations.allow_cluster_reader: false
+
+      path:
+        data: /elasticsearch/persistent/${CLUSTER_NAME}/data
+        logs: /elasticsearch/${CLUSTER_NAME}/logs
+        work: /elasticsearch/${CLUSTER_NAME}/work
+        scripts: /elasticsearch/${CLUSTER_NAME}/scripts
+
+      searchguard:
+        authcz.admin_dn:
+        - CN=system.admin,OU=OpenShift,O=Logging
+        config_index_name: ".searchguard.${HOSTNAME}"
+        ssl:
+          transport:
+            enabled: true
+            enforce_hostname_verification: false
+            keystore_type: JKS
+            keystore_filepath: /etc/elasticsearch/secret/searchguard.key
+            keystore_password: kspass
+            truststore_type: JKS
+            truststore_filepath: /etc/elasticsearch/secret/searchguard.truststore
+            truststore_password: tspass
+          http:
+            enabled: true
+            keystore_type: JKS
+            keystore_filepath: /etc/elasticsearch/secret/key
+            keystore_password: kspass
+            clientauth_mode: OPTIONAL
+            truststore_type: JKS
+            truststore_filepath: /etc/elasticsearch/secret/truststore
+            truststore_password: tspass
+    logging.yml: |
+      # you can override this using by setting a system property, for example -Des.logger.level=DEBUG
+      es.logger.level: INFO
+      rootLogger: ${es.logger.level}, file
+      logger:
+        # log action execution errors for easier debugging
+        action: WARN
+
+        # deprecation logging, turn to DEBUG to see them
+        deprecation: WARN, deprecation_log_file
+
+        # reduce the logging for aws, too much is logged under the default INFO
+        com.amazonaws: WARN
+
+        io.fabric8.elasticsearch: ${PLUGIN_LOGLEVEL}
+        io.fabric8.kubernetes: ${PLUGIN_LOGLEVEL}
+
+        # aws will try to do some sketchy JMX stuff, but its not needed.
+        com.amazonaws.jmx.SdkMBeanRegistrySupport: ERROR
+        com.amazonaws.metrics.AwsSdkMetrics: ERROR
+
+        org.apache.http: INFO
+
+        # gateway
+        #gateway: DEBUG
+        #index.gateway: DEBUG
+
+        # peer shard recovery
+        #indices.recovery: DEBUG
+
+        # discovery
+        #discovery: TRACE
+
+        index.search.slowlog: TRACE, index_search_slow_log_file
+        index.indexing.slowlog: TRACE, index_indexing_slow_log_file
+
+        # search-guard
+        com.floragunn.searchguard: WARN
+
+      additivity:
+        index.search.slowlog: false
+        index.indexing.slowlog: false
+        deprecation: false
+
+      appender:
+        console:
+          type: console
+          layout:
+            type: consolePattern
+            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %.10000m%n"
+
+        file:
+          type: dailyRollingFile
+          file: ${path.logs}/${cluster.name}.log
+          datePattern: "'.'yyyy-MM-dd"
+          layout:
+            type: pattern
+            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+        deprecation_log_file:
+          type: dailyRollingFile
+          file: ${path.logs}/${cluster.name}_deprecation.log
+          datePattern: "'.'yyyy-MM-dd"
+          layout:
+            type: pattern
+            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+        index_search_slow_log_file:
+          type: dailyRollingFile
+          file: ${path.logs}/${cluster.name}_index_search_slowlog.log
+          datePattern: "'.'yyyy-MM-dd"
+          layout:
+            type: pattern
+            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+        index_indexing_slow_log_file:
+          type: dailyRollingFile
+          file: ${path.logs}/${cluster.name}_index_indexing_slowlog.log
+          datePattern: "'.'yyyy-MM-dd"
+          layout:
+            type: pattern
+            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: logging-elasticsearch-sg
+  data:
+    sg_action_groups.yml: |-
+      ALL:
+        - "indices:*"
+      MANAGE:
+        - "indices:monitor/*"
+        - "indices:admin/*"
+      CREATE_INDEX:
+        - "indices:admin/create"
+      MANAGE_ALIASES:
+        - "indices:admin/aliases*"
+      MONITOR:
+        - "indices:monitor/*"
+      DATA_ACCESS:
+        - "indices:data/*"
+      WRITE:
+        - "indices:data/write*"
+      READ:
+        - "indices:data/read*"
+      DELETE:
+        - "indices:data/write/delete*"
+      CRUD:
+        - READ
+        - WRITE
+      SEARCH:
+        - "indices:data/read/search*"
+        - "indices:data/read/msearch*"
+        - SUGGEST
+      SUGGEST:
+        - "indices:data/read/suggest*"
+      INDEX:
+        - "indices:data/write/index*"
+        - "indices:data/write/update*"
+      GET:
+        - "indices:data/read/get*"
+        - "indices:data/read/mget*"
+
+      # CLUSTER
+      CLUSTER_ALL:
+        - cluster:*
+      CLUSTER_MONITOR:
+        - cluster:monitor/*
+    sg_config.yml: |-
+      searchguard:
+        dynamic:
+          http:
+            xff:
+              enabled: true
+              remoteIpHeader: 'x-forwarded-for'
+              trustedProxies: '.*'
+              internalProxies: '.*'
+          authc:
+            authentication_domain_proxy:
+              enabled: true
+              order: 0
+              http_authenticator:
+                challenge: false
+                type: proxy
+                config:
+                  user_header: 'x-proxy-remote-user'
+              authentication_backend:
+                type: noop
+            authentication_domain_basic_internal:
+              enabled: true
+              order: 1
+              http_authenticator:
+                type: clientcert
+                challenge: false
+              authentication_backend:
+                type: noop
+    sg_internal_users.yml: |-
+      ---
+        2X7c3eNX:
+          hash: DPQhTp2nAdOnpZo1r6Jv
+    sg_roles.yml: |-
+      sg_role_kibana:
+        cluster:
+          - cluster:monitor/nodes/info
+          - cluster:monitor/health
+        indices:
+          '*':
+            '*':
+              - ALL
+
+      sg_role_fluentd:
+        indices:
+          '*':
+            '*':
+              - WRITE
+              - CREATE_INDEX
+
+      sg_role_curator:
+        cluster:
+          - CLUSTER_MONITOR
+        indices:
+          '*':
+            '*':
+              - READ
+              - MANAGE
+
+      sg_role_admin:
+        indices:
+          '*':
+            '*':
+              - ALL
+        cluster:
+          - CLUSTER_ALL
+
+      sg_project_operations:
+        indices:
+          '?operations?*':
+            '*':
+              - READ
+              - indices:admin/mappings/fields/get*
+              - indices:admin/validate/query*
+              - indices:admin/get*
+          '*?*?*':
+            '*':
+              - READ
+              - indices:admin/mappings/fields/get*
+              - indices:admin/validate/query*
+              - indices:admin/get*
+    sg_roles_mapping.yml: |-
+      sg_role_kibana:
+        users:
+          - 'CN=system.logging.kibana,OU=OpenShift,O=Logging'
+
+      sg_role_fluentd:
+        users:
+          - 'CN=system.logging.fluentd,OU=OpenShift,O=Logging'
+
+      sg_role_curator:
+        users:
+          - 'CN=system.logging.curator,OU=OpenShift,O=Logging'
+
+      sg_role_admin:
+        users:
+          - 'CN=system.admin,OU=OpenShift,O=Logging'
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      logging-infra: support
+    name: logging-es
+  spec:
+    ports:
+    - port: 9200
+      protocol: TCP
+      targetPort: restapi
+    selector:
+      component: es
+      provider: openshift
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      logging-infra: support
+    name: logging-es-cluster
+  spec:
+    ports:
+    - port: 9300
+      protocol: TCP
+      targetPort: 9300
+    selector:
+      component: es
+      provider: openshift
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: es-pvc
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 500Gi
+  status:
+    accessModes:
+    - ReadWriteMany
+    capacity:
+      storage: 500Gi
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      component: es
+      deployment: logging-elasticsearch
+      logging-infra: elasticsearch
+      provider: openshift
+    name: logging-elasticsearch
+  spec:
+    replicas: 1
+    selector:
+      component: es
+      deployment: logging-elasticsearch
+      logging-infra: elasticsearch
+      provider: openshift
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          component: es
+          deployment: logging-elasticsearch
+          logging-infra: elasticsearch
+          provider: openshift
+        name: logging-elasticsearch
+      spec:
+        containers:
+        - env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: KUBERNETES_TRUST_CERT
+            value: "true"
+          - name: SERVICE_DNS
+            value: logging-es-cluster
+          - name: CLUSTER_NAME
+            value: logging-es
+          - name: INSTANCE_RAM
+            value: 8Gi
+          - name: NODE_QUORUM
+            value: "1"
+          - name: RECOVER_AFTER_NODES
+            value: "0"
+          - name: RECOVER_EXPECTED_NODES
+            value: "1"
+          - name: RECOVER_AFTER_TIME
+            value: 5m
+          image: ${REGISTRY_NAME}/openshift3/logging-elasticsearch:v3.5
+          imagePullPolicy: Always
+          name: elasticsearch
+          ports:
+          - containerPort: 9200
+            name: restapi
+            protocol: TCP
+          - containerPort: 9300
+            name: cluster
+            protocol: TCP
+          resources:
+            limits:
+              memory: 8Gi
+            requests:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /etc/elasticsearch/secret
+            name: elasticsearch
+            readOnly: true
+          - mountPath: /usr/share/java/elasticsearch/config
+            name: elasticsearch-config
+            readOnly: true
+          - mountPath: /elasticsearch/persistent
+            name: elasticsearch-storage
+          - mountPath: /opt/app-root/src/sgconfig
+            name: volume-lv8u4
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext:
+          supplementalGroups:
+          - 65534
+        serviceAccount: aggregated-logging-elasticsearch
+        serviceAccountName: aggregated-logging-elasticsearch
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: elasticsearch
+          secret:
+            defaultMode: 420
+            secretName: logging-elasticsearch
+        - configMap:
+            defaultMode: 420
+            name: logging-elasticsearch
+          name: elasticsearch-config
+        - name: elasticsearch-storage
+          persistentVolumeClaim:
+            claimName: es-pvc
+        - configMap:
+            defaultMode: 420
+            name: logging-elasticsearch-sg
+          name: volume-lv8u4
+    test: false
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: aggregated-logging-curator
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: logging-curator
+  data:
+    ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyakNDQWNLZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpnME9Wb1hEVEl5TURneE1EQTFNamcxTUZvdwpIakVjTUJvR0ExVUVBeE1UYkc5bloybHVaeTF6YVdkdVpYSXRkR1Z6ZERDQ0FTSXdEUVlKS29aSWh2Y05BUUVCCkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUx6RFg1ZmNMRU9GbHRXQ1BnRjF4UldYNUxJOUpFdlljcWVQZEMxa1NGQVUKRWtJRTJUcStWRk01dHp5TVNJenk0SVJPMkM3TFZHVWtSeDRHR2NvMUtpRGVoQ2IwWGFrcHV5dUhaWllnK0tCaQpQRldQS1dNLzNYVHpyd2laNWl0QjVhZ0doWWZzVkZ2eERVS3FheWF1Y2RSUlkzTXlZbkdLUkVycllPWTVIV0NWCkRzWVVrLzBhV2JVSGEvTW10MEZId1ZHUytXWlJqR1Bha3pibW9pUnFWYkpmYmQxT0ptTDY0UGxSNnd5K3cxWFQKaHVVbjRWTGtBN2RTcVVHckxFV0RKaXE0THRVL2Nyd0ZkM0tlMDlhL3lLQU9iNGVONm1xZi9Rd3IvQmcwUklzOApWSEl5U28rQ1ZQeThiN0kvbXNzUzdJcy9OTFc2dWp0dUJTSTZxYjlYNnUwQ0F3RUFBYU1qTUNFd0RnWURWUjBQCkFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGaTcKYktrZ2hpREJsNVpjWXBudHgzNm4zUmdMekV0Y0lLNDB1WTJKaHBtUlptS1VXRlNRUllkd2M4M2dsM2tzUE1ucgpmdDlkcXNSSzhEeDV0REZQR0xDNHJObWpUQkxGZ05waGZCL1dtRHE5eW81OGtsY0hSZnMwWnppMEJFc2c3cis2CjhPbW5yVzlFcjNvZ2tMbmttRXN0NjQ1dHBmOVhSZU82NXExOEd0dEVyaWpoVWYxa1pzZnF2WDh6cWRZOVpsWEgKd3puR0tERkZtSm1vTEN6RHN1dkZwNlpjWitmemc5Qm42bFVLQ3Fic0NxODRDRmhkUTFxWWtzSm13ZE5HUnFnZQp1NWd2ekNuNlNqMGdSTmtpV0pBdHpweXFBR0ZoSzg1L2xReVVReWs0eHh3WWQ4ekNiQmtvdllPY3QyN1hxRkR1CitjYXpkZ2VvYk1OSGppMCtIamc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURSakNDQWk2Z0F3SUJBZ0lCQkRBTkJna3Foa2lHOXcwQkFRVUZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpreE5Gb1hEVEU1TURneE1UQTFNamt4TkZvdwpSekVRTUE0R0ExVUVDZ3dIVEc5bloybHVaekVTTUJBR0ExVUVDd3dKVDNCbGJsTm9hV1owTVI4d0hRWURWUVFECkRCWnplWE4wWlcwdWJHOW5aMmx1Wnk1amRYSmhkRzl5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEEKTUlJQkNnS0NBUUVBMS9pOVo4aTVZQ1dPcXV5dWNqQWJzZWpDcUY5L2dEaXArTmU1QmRRUFAzdDNJL29PSHhGSApjck5KaXZ3ak8wU0pvenl6MG5PcTlYOW13bUtDTmRPZkc3Rm1yL2RabE9VL3NaNWVicGZWTi9JRlgvcjhQbTlNCnVDM1Bibm1CUW0xamtJalovT3FYNGFSRm5uS1FyTWs1TWJzdHlPZmFlNkJsSXZpY3I2Q3Z6Q29Jb1JFYkYvS1gKdUFUalhzTWxBSGkxeWFpVXZYeUMxaWRQY3BKa3hmRzFncTROTUxMZkxpSk9CanMvaUZQTVI0bmhRTFhXeUNGcwpwYXpZVTkxVU12ZzRrUkxyZlcwbVA2dTlwRy82eldzczVJVFg2MGJOalJoZkRFMzNIYVN6NlUzUTEyZ3FXd2xuCmpxeDVvQys3c3FXYTUrd0NkazJCU09MRUNNVkhnWi80R3dJREFRQUJvMll3WkRBT0JnTlZIUThCQWY4RUJBTUMKQmFBd0NRWURWUjBUQkFJd0FEQWRCZ05WSFNVRUZqQVVCZ2dyQmdFRkJRY0RBUVlJS3dZQkJRVUhBd0l3SFFZRApWUjBPQkJZRUZBM09ueEd4ODd3OGtUTlp1QngyZHVlbys1UzZNQWtHQTFVZEl3UUNNQUF3RFFZSktvWklodmNOCkFRRUZCUUFEZ2dFQkFKWmE3aFNoRDI0bzhiMkNDWGVvbGhpZlVsbThFYitzbTY3U2M1b2NEN1UvRzdIS09LQVAKVFVpM2poRGo4WEw5MzFLdy9tUi9GNzBLM2pONzF2c0JnMWp2TkRjMmJkTzhtUTNPUlJhK3NKM1VKR2hvVkdCVQo0ODVOQTZJNG1KTENJdG1wTGlsb1pqcjhpZ3VGdnFwc01hcUF5S2lLWlEzaTFJdlVERU1xUWY5anorSFVnMUJVCjN5ZVpaeUZ6dHJmd21hV01mcmRKSVlJaUtLdFBGTkZvM0cvakJRd1pONlJkZm83WUhzTGpxSzcrM1JFcldLTjMKdThYV0NxZWpmL1NkWnR1d3ZHbU5wcDlBU29KWkdxTGJ6VE9qOEFnQ2F4NlVhTEUzaGRWMnlSN2hxZUtnc2tpbApCWkdrSzFqVlBFN2RZUlNRQ0dUbTVIYWhsVVJ4N2Ewd0pmTT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2d0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktrd2dnU2xBZ0VBQW9JQkFRRFgrTDFueUxsZ0pZNnEKN0s1eU1CdXg2TUtvWDMrQU9LbjQxN2tGMUE4L2UzY2orZzRmRVVkeXMwbUsvQ003UkltalBMUFNjNnIxZjJiQwpZb0kxMDU4YnNXYXY5MW1VNVQreG5sNXVsOVUzOGdWZit2dytiMHk0TGM5dWVZRkNiV09RaU5uODZwZmhwRVdlCmNwQ3N5VGt4dXkzSTU5cDdvR1VpK0p5dm9LL01LZ2loRVJzWDhwZTRCT05ld3lVQWVMWEpxSlM5ZklMV0owOXkKa21URjhiV0NyZzB3c3Q4dUlrNEdPeitJVTh4SGllRkF0ZGJJSVd5bHJOaFQzVlF5K0RpUkV1dDliU1kvcTcyawpiL3JOYXl6a2hOZnJSczJOR0Y4TVRmY2RwTFBwVGREWGFDcGJDV2VPckhtZ0w3dXlwWnJuN0FKMlRZRkk0c1FJCnhVZUJuL2diQWdNQkFBRUNnZ0VCQU5NT0RLS1lvTGZaM0JNakd0TVNPbTVoSmFGL09jMW5Fb3ZRM01wYVV0QloKNnJNbzBaWUF2ODdTY0lNM0pZTHMxb2pFY0lLd2NKaGErV1BxK281NWtScHlBZ1RpZHhPditNK3VFV0NJVm1ERwp6Z1BlOVpSYUZpSkMrbHhldHpmZ1NKVmRkNUhXKzdnUlhjdWE3OUU3RC82T2lnNjByV2wwOUlENWJiMmdEVXc0CjEzMHZRODFlalEyL29NdFl6NDNjcFFPTFQ2UUd0eTlRMGFza3JsUkxxRkR3WmU5Qm9xT3Y1TkpvYmQ5TWtBaHIKdG1LaTAzRCt2U2ZrNk02S3JFTVNWL211SG41djhBei8wdktCSTRSeWRpaWNZbWg0RkJZZHZXNTZtTU54Yk1ieAp5a1dId0NXd0lkS3k3eE1KVGpUbUFpRGl1cWNQRG9PZTFyVlZETDM1cnVrQ2dZRUE5cnNiOG80YnVKalU5Mmh6CjJOeFFnQ1lHSkVqT0o2MmpWL3B0cHh0L3JSdnp2YklSY1AwSytZbTBOOEg4akdpdm9aN1FEcE56aFpjR3VILzEKM2QzS1YzK0tvaXVMU0JhQjNlU0pwVHlOWlByZ1NPNGpkdS9XTE1pNG5RUWMvNDRvRDNuRjJsSnVHTzE2N0ZXSgpkT1g2U2J2RUQza2puS29iRmRiWWtuRlQzMmNDZ1lFQTRCWFBHZVh2NnBDSVk2eVFMUnUrQUM0V2Z6ZFBrTjVOCnZLT0tJOE1aby9rM3lXd2IvUm9iOGRyRnJtTC9OczBMeTJTTE84RFZBS0g1RzIvaGJGdFZISVRDVEFNQkNDM3oKNUdhcGdraTZxTUFTNkt5aCtKaDZoOUdueURLNlJhY0VEK25LbVB3TTViRXU3RFI1d0RxeThJcDFWQ0FleDFCcQo3YWhmMDNkWDFTMENnWUVBbVAvdWxMc0s5YTNRWXB1ak94ZGoxQlBBT3ovcWx6QlYybml4QnE5R3ZWSllFNG9ZCnhyZ2oxaHBPWjBVa0Z1M1QrNlUvMzhvUUdRZE9ZNXIySEY4czJwVjhvcFBlQ3hYcDhtK0Y2N0ZnL1AyVmw2UVUKMmV4Z0krVlVsZ20yOGNKMWxTTXVUZlJQMGFWeVZKdTJZWWM3YmYzQjF0YUgvdDU5YlUyTmYwSkhnSUVDZ1lCYQpPczNpbXNESlRadHRyeTE2ekdIc1JxS09aU0lucml2VkduRGtSNG9LaWE1Wjc2c3hkaExzaHUvMGNTNWN6YUhECksyQVpGbU51VnNvc3J4Y3cvM0c5QXdRTmdXUW4vQURwNWlDNU1qbmUrMEJoNmlscUpWT3BYdFZWZW4rZ3praUgKYzljOVZMaUl3SmlwU2RRQWdHSlBFeUY5VjFXdFlnYzhYUUVBOEZ3d25RS0JnUURxT0xnQzA3STRaTDN1emtNMgp6Y01DVGRJWklOOUVYSmQvVWw4QmhzdkFtVjgvcVFseU5tRFpIMGwrRjVqV0VNbG82TVhhdytXa3YvK1FlZm1VCjllREhVbkQvT1NEcjVhZlVBN1hOdk84WEkyaTBXS1p3RjZTV3pKbEord3VWNmFnMnFYNlc4bjNZTHZ5M3BtRGEKWTNnZnF6OHdYZjdRNWNuUkFubjJKV0h1N0E9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
+  type: Opaque
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: logging-curator
+  data:
+    config.yaml: |
+      # Logging example curator config file
+
+      # uncomment and use this to override the defaults from env vars
+      #.defaults:
+      #  delete:
+      #    days: 30
+      #  runhour: 0
+      #  runminute: 0
+
+      # to keep ops logs for a different duration:
+      #.operations:
+      #  delete:
+      #    weeks: 8
+
+      # example for a normal project
+      #myapp:
+      #  delete:
+      #    weeks: 1
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      logging-infra: support
+    name: logging-fluentd
+  spec:
+    ports:
+    - name: forward
+      port: 24224
+      protocol: TCP
+      targetPort: 24224
+    - name: http
+      port: 9880
+      protocol: TCP
+      targetPort: 9880
+    selector:
+      app: logging-fluentd
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      component: curator
+      logging-infra: curator
+      provider: openshift
+    name: logging-curator
+  spec:
+    replicas: 1
+    selector:
+      component: curator
+      logging-infra: curator
+      provider: openshift
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          component: curator
+          logging-infra: curator
+          provider: openshift
+        name: logging-curator
+      spec:
+        containers:
+        - env:
+          - name: K8S_HOST_URL
+            value: https://kubernetes.default.svc.cluster.local
+          - name: ES_HOST
+            value: logging-es
+          - name: ES_PORT
+            value: "9200"
+          - name: ES_CLIENT_CERT
+            value: /etc/curator/keys/cert
+          - name: ES_CLIENT_KEY
+            value: /etc/curator/keys/key
+          - name: ES_CA
+            value: /etc/curator/keys/ca
+          - name: CURATOR_DEFAULT_DAYS
+            value: "30"
+          - name: CURATOR_RUN_HOUR
+            value: "0"
+          - name: CURATOR_RUN_MINUTE
+            value: "0"
+          - name: CURATOR_RUN_TIMEZONE
+            value: UTC
+          - name: CURATOR_SCRIPT_LOG_LEVEL
+            value: INFO
+          - name: CURATOR_LOG_LEVEL
+            value: ERROR
+          image: ${REGISTRY_NAME}/openshift3/logging-curator:v3.5
+          imagePullPolicy: Always
+          name: curator
+          resources:
+            limits:
+              cpu: 100m
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /etc/curator/keys
+            name: certs
+            readOnly: true
+          - mountPath: /etc/curator/settings
+            name: config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        serviceAccount: aggregated-logging-curator
+        serviceAccountName: aggregated-logging-curator
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: certs
+          secret:
+            defaultMode: 420
+            secretName: logging-curator
+        - configMap:
+            defaultMode: 420
+            name: logging-curator
+          name: config
+    test: false
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: aggregated-logging-fluentd
+- apiVersion: v1
+  data:
+    ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyakNDQWNLZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpnME9Wb1hEVEl5TURneE1EQTFNamcxTUZvdwpIakVjTUJvR0ExVUVBeE1UYkc5bloybHVaeTF6YVdkdVpYSXRkR1Z6ZERDQ0FTSXdEUVlKS29aSWh2Y05BUUVCCkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUx6RFg1ZmNMRU9GbHRXQ1BnRjF4UldYNUxJOUpFdlljcWVQZEMxa1NGQVUKRWtJRTJUcStWRk01dHp5TVNJenk0SVJPMkM3TFZHVWtSeDRHR2NvMUtpRGVoQ2IwWGFrcHV5dUhaWllnK0tCaQpQRldQS1dNLzNYVHpyd2laNWl0QjVhZ0doWWZzVkZ2eERVS3FheWF1Y2RSUlkzTXlZbkdLUkVycllPWTVIV0NWCkRzWVVrLzBhV2JVSGEvTW10MEZId1ZHUytXWlJqR1Bha3pibW9pUnFWYkpmYmQxT0ptTDY0UGxSNnd5K3cxWFQKaHVVbjRWTGtBN2RTcVVHckxFV0RKaXE0THRVL2Nyd0ZkM0tlMDlhL3lLQU9iNGVONm1xZi9Rd3IvQmcwUklzOApWSEl5U28rQ1ZQeThiN0kvbXNzUzdJcy9OTFc2dWp0dUJTSTZxYjlYNnUwQ0F3RUFBYU1qTUNFd0RnWURWUjBQCkFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGaTcKYktrZ2hpREJsNVpjWXBudHgzNm4zUmdMekV0Y0lLNDB1WTJKaHBtUlptS1VXRlNRUllkd2M4M2dsM2tzUE1ucgpmdDlkcXNSSzhEeDV0REZQR0xDNHJObWpUQkxGZ05waGZCL1dtRHE5eW81OGtsY0hSZnMwWnppMEJFc2c3cis2CjhPbW5yVzlFcjNvZ2tMbmttRXN0NjQ1dHBmOVhSZU82NXExOEd0dEVyaWpoVWYxa1pzZnF2WDh6cWRZOVpsWEgKd3puR0tERkZtSm1vTEN6RHN1dkZwNlpjWitmemc5Qm42bFVLQ3Fic0NxODRDRmhkUTFxWWtzSm13ZE5HUnFnZQp1NWd2ekNuNlNqMGdSTmtpV0pBdHpweXFBR0ZoSzg1L2xReVVReWs0eHh3WWQ4ekNiQmtvdllPY3QyN1hxRkR1CitjYXpkZ2VvYk1OSGppMCtIamc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURSakNDQWk2Z0F3SUJBZ0lCQWpBTkJna3Foa2lHOXcwQkFRVUZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWprd09Wb1hEVEU1TURneE1UQTFNamt3T1ZvdwpSekVRTUE0R0ExVUVDZ3dIVEc5bloybHVaekVTTUJBR0ExVUVDd3dKVDNCbGJsTm9hV1owTVI4d0hRWURWUVFECkRCWnplWE4wWlcwdWJHOW5aMmx1Wnk1bWJIVmxiblJrTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEEKTUlJQkNnS0NBUUVBNXhLU3p2ZG5XUXRtaUQxZy9STE9PWS9ES1QrVjZ4UXFSY2RvbnNUZXVaS2FIQzZJY0UrYgpzLzA4b0I0dVpoY21pcXh1SXArTWJhb2h0REZrYXBqS0NNUVRnNlcvTytxbjVUQktjMXFOY20rMVROQTg2ZllKCitvQnBQelNKR1llWkc0aFFZaENjejZyTWplK0c0dmw1MnNtR3p0bmdmclFHSzdSRXFlczhZelBNcXpad0lmeXAKNG80bitNUWVtTnJDbmZkQTkzMnNaVGtyNCtUQk5VMHIySUNxOGxiZlhSTTBTdGJrSDZQU2E4R2dnN2tNNDNKRAoxTjN5a2dJOHFnOEw3Wis3TGQ5SnliZ3pNZ2hKQUVzZVMyZ0Naam9WZkJuT0Yrd1BZenYwUU5EbDJ6SkhmdFRYCkNTMDlZa0hnRVB6eFVhVUt5aWplVkxiNTBSK2pTOVc4R3dJREFRQUJvMll3WkRBT0JnTlZIUThCQWY4RUJBTUMKQmFBd0NRWURWUjBUQkFJd0FEQWRCZ05WSFNVRUZqQVVCZ2dyQmdFRkJRY0RBUVlJS3dZQkJRVUhBd0l3SFFZRApWUjBPQkJZRUZFSDVoZXlsdUlPS3RqQVgrd2JEc01Ob0M4WTVNQWtHQTFVZEl3UUNNQUF3RFFZSktvWklodmNOCkFRRUZCUUFEZ2dFQkFFZ2N2aFp1VU9TWU05NWpNazAyRURhWitaY1YwOVFtNG1iZVhMeHFsTnJzczdvZjRQb1IKR01tUjlFZytvd2JTTFU0RkR2WXEvQndEd0g0bDNWcS9BMjFqeWpWSVY2S1UxN05XSHBYNjdUdENNK0ZDa0JQaApuc1k4NVNycnZXVjlXRkNMSXN2RzFVNUo4SnloSHVDUVI0ekRXK2NRYVlld1JMUlBTTUxNL29RU2FEK09zQUZrCnd0Yy9TS0tXOUN6R2Zra016NEFGQUN1cEVyOXRpZ0Q5MW93eU9jNDlFaUJmVEZsOGJ3cHFBSE55TVFDU2NtdW8KMG92Z0J4dE5aVXpieHNDV0g2dlVUTWRiMWdhci9xN1VMU0hqTTlRODU1VnhMT1hPVi9IbHVFaUc2UlpOTTluagpoYmtBa2JCQ2dBekdEK3lZOGtMbzQyblRSWm5PbHRFWHNSQT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRRG5FcExPOTJkWkMyYUkKUFdEOUVzNDVqOE1wUDVYckZDcEZ4MmlleE42NWtwb2NMb2h3VDV1ei9UeWdIaTVtRnlhS3JHNGluNHh0cWlHMApNV1JxbU1vSXhCT0RwYjg3NnFmbE1FcHpXbzF5YjdWTTBEenA5Z242Z0drL05Ja1poNWtiaUZCaUVKelBxc3lOCjc0YmkrWG5heVliTzJlQit0QVlydEVTcDZ6eGpNOHlyTm5BaC9LbmlqaWY0eEI2WTJzS2Q5MEQzZmF4bE9TdmoKNU1FMVRTdllnS3J5VnQ5ZEV6UksxdVFmbzlKcndhQ0R1UXpqY2tQVTNmS1NBanlxRHd2dG43c3QzMG5KdURNeQpDRWtBU3g1TGFBSm1PaFY4R2M0WDdBOWpPL1JBME9YYk1rZCsxTmNKTFQxaVFlQVEvUEZScFFyS0tONVV0dm5SCkg2TkwxYndiQWdNQkFBRUNnZ0VBVnVhMlRaM2Z3UzQzYms5ZkZXNG9IcC9CYnRiYUErRytrQ1dSWS94NEl1Uk8KandDMUVUL3ZONzZxT1RHQWs2WnJPVVhsMmFHVlIzenZWZndwWHFsOWVkUjcza3ZNWXJVNlZVaFhCNURybHprSgp2d3lsaS91YS94bWgrMEkvdVZrMHJKVVVYZjBQYkU0NHhieHFSeHc1eHAxNTFIcytJWWlFdFpVREtjQXRJc1VXCk9uVDlCYit2bUcrK2ZQUGk1ZWVsdnByU2ZRbGlFTnB5MTdmZENmWm9Ca0VZVVh5NnErYVBGZXdKQmlvTjRiMjYKUEsvdFNtaHg2M01TbVpJMjFaVTJrbmtOVWRlK0ZlMXkzL0JJK1lUUE8vLzlPQ3o2NlEyNjhUS1hjWFVjcXBYRQpBem15S0ROeDFwUGJvVlltODRPVXdIY0hnazNxcURrb2hlUDNsam1DS1FLQmdRRCtONWtwWVhWNXBsa3dsendsCjBCdHE0bHVnTG1sd0x2aXdBQy95RU1NeUhyV1VGR01ZM2JXYitweHZtUk1ibm84dExIR0NMcDVmV1Q3bzVBYWEKMFhHVnk1THI2QktwNjB4T3hHRDJNbkFDK0FMWGlIcmNZcGFJQXdNcVcvK21DQ1k3bmc5SmFlNGZvR3E1U2F2bApHL3RHbXZWNWtRSDdHd2hhOVFKZTl4aTZGUUtCZ1FEb3NXeFJybnFsN05iQ2xyZWpRemlrU2xDU3RvZWhRdU1aCnc5VXFoc0FuQm9kYUdxd1RHbDBEY21EZ1FRYWFLRUxQVE5RcXd1VGNaSTF6NHd6aFY0ZDRwbHYxU2ZhMlJCSDAKemRmQjRZL0dYV2ZWcEZaN3F0dG5sRlBtMkcxeGpLNExlcE9wdTQ4d0NpYWhmNmVxY1hHTWw0SGdhd1l6Z0pxbwo5eTFITjIwWmJ3S0JnQVBxODI5UjB5K213cVVmRDR3OW9zNkk0b1NiY29DS0dNY05tYStQVnBMRkttTTMxVGNpCjQ1T2R6eDloS293NGExaDA0T0x5dVBvYk0vNysxS002S3hmMTVUUEJoZGdjaWphRWpFSC9FUDdhdDZCK3QvWUIKaHZSZHA0VFZtaUVDNnlQc0Vhdzk5NitCRjJQM29MQ05OOWdrdHpmQ1psZHFXVHlkbmdXOHBTTHBBb0dCQUpGSgo5ckFwbVRydzNrY3hoQWZVZVJGYnRXTmx4Tm5Ud2FqY3RjU1B6bnFQZ1FPcGs3ZDV4b25ZYU5TY3hWcUx1T3RtCnRUTGQ3YmdPc0tPaktPK3FqMU90eTgwa0dYOUVrVkdoRlE1aG9EdmpKbW9tNmpqZFBaRTI5QXczSmw2MzBCUXEKdlBoRnUrbnE3S1A1Nk41clp0SzU1c1lSRFJZclBtWXhyM3ZBQjhiUkFvR0JBTlVhS3NBUWw1aUxubGVJRTlIcQpHN0JpaktaaCtZNGNEcVJUK3FaKytwenJZaEUxa2lFMEVib0VzdDhVa2tsKzFWUEJBeU8rT0M2Z0pLbWo2dGVKCjEyM2JlVGhkRThuVkQyMGlybDU4c20zd0ZrSE13TmhjUUt4eFFyTEo4V1V4SWcxMXByNGEvdHNmaWpYT01TaEUKc2p5VndsQW5uRXRJQWl6cktnWWRJTFhNCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  kind: Secret
+  metadata:
+    name: logging-fluentd
+  type: Opaque
+- apiVersion: v1
+  data:
+    fluent.conf: |
+      # This file is the fluentd configuration entrypoint. Edit with care.
+
+      # In each section below, pre- and post- includes don't include anything initially;
+      # they exist to enable future additions to openshift conf as needed.
+
+      ## sources
+      <source>
+          @type forward
+          port 24224
+      </source>
+
+      <source>
+        @type http
+        port 9880
+      </source>
+
+      <filter **>
+          type record_transformer
+          enable_ruby
+          <record>
+              time ${ (Time.at(time) > Time.now) ? (Time.new((time.year - 1), time.month, time.day, time.hour, time.min, time.sec, time.utc_offset).to_datetime.to_s) : (time.to_datetime.to_s) }
+          </record>
+      </filter>
+
+        # <match **>
+        #    @type stdout
+        # </match>
+
+          
+      <match **>
+        @type elasticsearch_dynamic
+        host "#{ENV['ES_HOST']}"
+        port "#{ENV['ES_PORT']}"
+        scheme https
+        index_name project.logback.demo.${Time.at(time).getutc.strftime(@logstash_dateformat)}
+        
+        user fluentd
+        password changeme
+
+        client_key "#{ENV['ES_CLIENT_KEY']}"
+        client_cert "#{ENV['ES_CLIENT_CERT']}"
+        ca_file "#{ENV['ES_CA']}"
+
+        type_name com.redhat.viaq.common
+        include_timestamp true
+
+        # there is currently a bug in the es plugin + excon - cannot
+        # recreate/reload connections
+        reload_connections false
+        reload_on_failure false
+        flush_interval 5s
+        max_retry_wait 300
+        disable_retry_limit
+      </match>
+      
+      <system>
+        log_level info
+      </system>
+    secure-forward.conf: |
+      # @type secure_forward
+
+      # self_hostname ${HOSTNAME}
+      # shared_key <SECRET_STRING>
+
+      # secure yes
+      # enable_strict_verification yes
+
+      # ca_cert_path /etc/fluent/keys/your_ca_cert
+      # ca_private_key_path /etc/fluent/keys/your_private_key
+        # for private CA secret key
+      # ca_private_key_passphrase passphrase
+
+      # <server>
+        # or IP
+      #   host server.fqdn.example.com
+      #   port 24284
+      # </server>
+      # <server>
+        # ip address to connect
+      #   host 203.0.113.8
+        # specify hostlabel for FQDN verification if ipaddress is used for host
+      #   hostlabel server.fqdn.example.com
+      # </server>
+    throttle-config.yaml: |
+      # Logging example fluentd throttling config file
+
+      #example-project:
+      #  read_lines_limit: 10
+      #
+      #.operations:
+      #  read_lines_limit: 100
+  kind: ConfigMap
+  metadata:
+    name: logging-fluentd
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: logging-fluentd
+      deploymentconfig: logging-fluentd
+    name: logging-fluentd
+  spec:
+    replicas: 1
+    selector:
+      app: logging-fluentd
+      deploymentconfig: logging-fluentd
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: logging-fluentd
+          deploymentconfig: logging-fluentd
+      spec:
+        containers:
+        - command:
+          - bash
+          - -c
+          - fluentd
+          env:
+          - name: K8S_HOST_URL
+            value: https://kubernetes.default.svc.cluster.local
+          - name: ES_HOST
+            value: logging-es
+          - name: ES_PORT
+            value: "9200"
+          - name: ES_CLIENT_CERT
+            value: /etc/fluent-keys/cert
+          - name: ES_CLIENT_KEY
+            value: /etc/fluent-keys/key
+          - name: ES_CA
+            value: /etc/fluent-keys/ca
+          - name: OPS_HOST
+            value: logging-es
+          - name: OPS_PORT
+            value: "9200"
+          - name: OPS_CLIENT_CERT
+            value: /etc/fluent-keys/cert
+          - name: OPS_CLIENT_KEY
+            value: /etc/fluent-keys/key
+          - name: OPS_CA
+            value: /etc/fluent-keys/ca
+          - name: ES_COPY
+            value: "false"
+          - name: ES_COPY_HOST
+          - name: ES_COPY_PORT
+          - name: ES_COPY_SCHEME
+            value: https
+          - name: ES_COPY_CLIENT_CERT
+          - name: ES_COPY_CLIENT_KEY
+          - name: ES_COPY_CA
+          - name: ES_COPY_USERNAME
+          - name: ES_COPY_PASSWORD
+          - name: OPS_COPY_HOST
+          - name: OPS_COPY_PORT
+          - name: OPS_COPY_SCHEME
+            value: https
+          - name: OPS_COPY_CLIENT_CERT
+          - name: OPS_COPY_CLIENT_KEY
+          - name: OPS_COPY_CA
+          - name: OPS_COPY_USERNAME
+          - name: OPS_COPY_PASSWORD
+          - name: USE_JOURNAL
+          - name: JOURNAL_SOURCE
+          - name: JOURNAL_READ_FROM_HEAD
+          image: ${REGISTRY_NAME}/openshift3/logging-fluentd:v3.5
+          imagePullPolicy: IfNotPresent
+          name: logging-fluentd
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /etc/fluent
+            name: config
+            readOnly: true
+          - mountPath: /etc/fluent-keys
+            name: certs
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        serviceAccount: aggregated-logging-fluentd
+        serviceAccountName: aggregated-logging-fluentd
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: logging-fluentd
+          name: config
+        - name: certs
+          secret:
+            defaultMode: 420
+            secretName: logging-fluentd
+    test: false
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: aggregated-logging-kibana
+- apiVersion: v1
+  data:
+    ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyakNDQWNLZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpnME9Wb1hEVEl5TURneE1EQTFNamcxTUZvdwpIakVjTUJvR0ExVUVBeE1UYkc5bloybHVaeTF6YVdkdVpYSXRkR1Z6ZERDQ0FTSXdEUVlKS29aSWh2Y05BUUVCCkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUx6RFg1ZmNMRU9GbHRXQ1BnRjF4UldYNUxJOUpFdlljcWVQZEMxa1NGQVUKRWtJRTJUcStWRk01dHp5TVNJenk0SVJPMkM3TFZHVWtSeDRHR2NvMUtpRGVoQ2IwWGFrcHV5dUhaWllnK0tCaQpQRldQS1dNLzNYVHpyd2laNWl0QjVhZ0doWWZzVkZ2eERVS3FheWF1Y2RSUlkzTXlZbkdLUkVycllPWTVIV0NWCkRzWVVrLzBhV2JVSGEvTW10MEZId1ZHUytXWlJqR1Bha3pibW9pUnFWYkpmYmQxT0ptTDY0UGxSNnd5K3cxWFQKaHVVbjRWTGtBN2RTcVVHckxFV0RKaXE0THRVL2Nyd0ZkM0tlMDlhL3lLQU9iNGVONm1xZi9Rd3IvQmcwUklzOApWSEl5U28rQ1ZQeThiN0kvbXNzUzdJcy9OTFc2dWp0dUJTSTZxYjlYNnUwQ0F3RUFBYU1qTUNFd0RnWURWUjBQCkFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGaTcKYktrZ2hpREJsNVpjWXBudHgzNm4zUmdMekV0Y0lLNDB1WTJKaHBtUlptS1VXRlNRUllkd2M4M2dsM2tzUE1ucgpmdDlkcXNSSzhEeDV0REZQR0xDNHJObWpUQkxGZ05waGZCL1dtRHE5eW81OGtsY0hSZnMwWnppMEJFc2c3cis2CjhPbW5yVzlFcjNvZ2tMbmttRXN0NjQ1dHBmOVhSZU82NXExOEd0dEVyaWpoVWYxa1pzZnF2WDh6cWRZOVpsWEgKd3puR0tERkZtSm1vTEN6RHN1dkZwNlpjWitmemc5Qm42bFVLQ3Fic0NxODRDRmhkUTFxWWtzSm13ZE5HUnFnZQp1NWd2ekNuNlNqMGdSTmtpV0pBdHpweXFBR0ZoSzg1L2xReVVReWs0eHh3WWQ4ekNiQmtvdllPY3QyN1hxRkR1CitjYXpkZ2VvYk1OSGppMCtIamc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURSVENDQWkyZ0F3SUJBZ0lCQXpBTkJna3Foa2lHOXcwQkFRVUZBREFlTVJ3d0dnWURWUVFERXhOc2IyZG4KYVc1bkxYTnBaMjVsY2kxMFpYTjBNQjRYRFRFM01EZ3hNVEExTWpreE1sb1hEVEU1TURneE1UQTFNamt4TWxvdwpSakVRTUE0R0ExVUVDZ3dIVEc5bloybHVaekVTTUJBR0ExVUVDd3dKVDNCbGJsTm9hV1owTVI0d0hBWURWUVFECkRCVnplWE4wWlcwdWJHOW5aMmx1Wnk1cmFXSmhibUV3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXcKZ2dFS0FvSUJBUURUNHNWTlEzTGtLU0U2Ymd3M1FoOWNlQzlhZFd2MTNXeUMyeEtVSmptY3I3Vk9tb1N1Q2NHTwp6L3E0ckh4YVltcCs1TTF6ZjJ1REtMVTRLdXlObUVpSHhUWHpEYzFrUmhsbzdLTWNxM040VzBKRXhMRlFScllpCkdicWc1K0MxZUluRE1SZkdtejBidkErcnVtWkRXMHFUbmsrdXNuVE5HVE1haU9MMDJRLy9XVFhjK3Bud005KzMKQW55RGluRjg0MGs2OEdWenRjWHJpQmF2WFhHK2V1b05CeTNFTlg4dTZyQ24xTXdsMk1kNllSaGVnZHNidFI0awpxNmNvUmtRSUNzZDIvaU05QWViVVR2dTFnZU1SSkpINGF4NkgyYXhXbWVBUU1BRkFiMnRMS21DMWFvUTRaUU9YCi9jWVNxbU5Rdll1R2NMaFdqeFVtN0NsL29VSXYvZEdCQWdNQkFBR2paakJrTUE0R0ExVWREd0VCL3dRRUF3SUYKb0RBSkJnTlZIUk1FQWpBQU1CMEdBMVVkSlFRV01CUUdDQ3NHQVFVRkJ3TUJCZ2dyQmdFRkJRY0RBakFkQmdOVgpIUTRFRmdRVWdmNkNPVVJYaXEwYkNzWFZlNC84Y2J0dTFRNHdDUVlEVlIwakJBSXdBREFOQmdrcWhraUc5dzBCCkFRVUZBQU9DQVFFQU9ROGppTVd0NW1YejlUYVl5V0s0WnJ1S1dxRFZNZlRHZllaNXRlWGhqbmYwTkZRQ1gyMjgKcnhPS0JBdVRsRTlrY0xqMHpHV1Z6K3JZVi9vSC9MSWZTUGpqTy8zVVNYSjhIaGtvbUxFQXNBbVYvZTNlVGxRUgpkRE10ZzMwQmJLaGpSTDVGTVhaN1M1cUJxRVFoVEYwU2w0aFZBWE9kait5VS9ZSlNhOFhzZi9yWE9CcDJaSDZ0CmIzNGVHdlprSGN5UG1xOWF5SktLdzU0UUozVUI1Q0kxRERXSzFKeUJwMmdkOUNmcm42dys4cTB4NjNXNlViZE8KWEtSRnA4RDg1Y0VZMXlRNG10Nko5M1JFS1lYMlE3VmdkUE02cVR6NldlSW9wUktQbjhrZWNPbVJablpzMUx4NwpXQzV4cnMzbTBVYWd1RHV5M202K1lYVXFSTTZhdTlqQzlRPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2d0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktrd2dnU2xBZ0VBQW9JQkFRRFQ0c1ZOUTNMa0tTRTYKYmd3M1FoOWNlQzlhZFd2MTNXeUMyeEtVSmptY3I3Vk9tb1N1Q2NHT3ovcTRySHhhWW1wKzVNMXpmMnVES0xVNApLdXlObUVpSHhUWHpEYzFrUmhsbzdLTWNxM040VzBKRXhMRlFScllpR2JxZzUrQzFlSW5ETVJmR216MGJ2QStyCnVtWkRXMHFUbmsrdXNuVE5HVE1haU9MMDJRLy9XVFhjK3Bud005KzNBbnlEaW5GODQwazY4R1Z6dGNYcmlCYXYKWFhHK2V1b05CeTNFTlg4dTZyQ24xTXdsMk1kNllSaGVnZHNidFI0a3E2Y29Sa1FJQ3NkMi9pTTlBZWJVVHZ1MQpnZU1SSkpINGF4NkgyYXhXbWVBUU1BRkFiMnRMS21DMWFvUTRaUU9YL2NZU3FtTlF2WXVHY0xoV2p4VW03Q2wvCm9VSXYvZEdCQWdNQkFBRUNnZ0VCQUlmbnlJM0tXWU1uTG56LzRTNEFaNFUwUVl0UURiTmlGeHZIMEo3ZDljNGUKbGJpWk84azEwTVQ5ZWQvQ0l2RUdkekIxS2FLUGRESm9oZlJFOC8zT1U1ZGlVenhXK2dyN080a2xYMm9nUHF4UQpQSzFIVEVRbFZ1V0FnMGg1OHBQemdNbUdUNjNBSE80Ukxpd0VIMXZNem9UbzRrczNnOXVaOGtGdTA4UWhCalhOCm8vTmxTMHhqbHZkcnhYckJVUnFlM2owOXk5UWhobUNGMC96REl5clpRRVd4blBiN0NDbkRkYU1YUGlKN01kV3gKclRIMVluUTBDbUFoS3kza1krWis4cUtPeWUwcSszM29iNEV4aGVSTElkeFRpajdiK1BqdkEyM0NCQjVCSjZBZApMZlYyVFQvTzhzRFpZaDVoVjE3R2o2THVFQU5KcUZidmZRUFJpM2EvTDhFQ2dZRUE3dnNVQjNHc1gzYXZ3R3BuCkViejFQNzIwdFRwUThlajRLcGV2RE1UMDhPd2xmVmJSRGlkMlMzZjA1dnBwa0p4eU5yaytwMDVWRWZOdXBkcm4KeUJtRzJrTW54UFBTU2owTUJDbTBlZ0k1aERtaXhwODZVbUdTSHlCV01EYUJNaHV2VkFNZ0ExSjMxVmVCRFM2MQozUHdEbmdrM2pRZG9VOFVIRzVjZjRHM2RpaDBDZ1lFQTR2bTNuUzJXYWN3YjVRNXprWGdSV3B1SmNIQVM4RTNQCktHcW9MdHZmNUR2aXEvYysreDhjVUJtYXFBb3N3aFJPeXpaUG41dzV5VjhpclJJZ3hPV2JSKzlCVGxySzg2dzIKTVpZVGVidmVVeG9HNG1mSyt6Y2VoekxudzNHNG1HejE2TC9QTFNLbnFuRFhVdGo0MmFSR1JwYlcrdXYrNTVOTQpTdWo2SFdDMzU3VUNnWUE2YU4raVdpUTVTUGIzM29uR2locWZNNnpCUnJtV0JzenhEQlhhMXlETzZjalg4Nm93Ci9YQXFUZTFycnZTeVJhcWN1WFlZeWtwOGtyVU9rSXhxR2VNZDRhQU13Vk02bGVVajkxV0hKSmdPTzFBUG44ZFAKYjAyWmtmdSsyUE9HM2NGaWxVanp4dXBIR0pZUU5NUjZlSllod0RyMW0wUGloWnVSSU1USHc5S0wrUUtCZ1FDcwoxajFrdWg4c3B4bWl2Zk54Rlg0WmdoRVJoclpWT05zRHl0d1ErcXV1RDVBWEpTcFhiYVJRdG42WGNWQU41Z3J1CklZaFdZVTk3c1M4bG5ZVklpaE5KbnI0YkhYWW9RYjN1Mm5vd0c4ZzdmYms2VkpFejVSQWhJYmxza2I5Z2lyQmoKTVJSaEtWK0ZvWEhHQzZUTGpwVlpFV25aSHpZM1AybzhMTmF3NGtLSWRRS0JnUURQQzJtNFZucnVBRDZyRHN3cQo3bEEvSXdmeHhNMlY3UGZaRStqNjJtRHlBQkxuY1NjYi9YNm9XWWp2djdYVXc3WUNackVFd2d6SjBOc09QNGNUCnBqNGVYNGVEakR0SEtvbHJpZDl6WDE1NVl0aWhLVTFZbzdTR0RDbnRKRzh3cjZ3L2JxdWxMTGNWWW1ITVBrOFEKZGthZVhGb1BvVnRuRHpxcmZPTlJYR2dLcGc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
+  kind: Secret
+  metadata:
+    name: logging-kibana
+  type: Opaque
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: kibana
+  spec:
+    host: null 
+    to:
+      kind: Service
+      name: logging-kibana
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      logging-infra: support
+    name: logging-kibana
+  spec:
+    ports:
+    - port: 5601
+      protocol: TCP
+      targetPort: 5601
+    selector:
+      component: kibana
+      provider: openshift
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      component: kibana
+      logging-infra: kibana
+      provider: openshift
+    name: logging-kibana
+  spec:
+    replicas: 1
+    selector:
+      component: kibana
+      logging-infra: kibana
+      provider: openshift
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          component: kibana
+          logging-infra: kibana
+          provider: openshift
+        name: logging-kibana
+      spec:
+        containers:
+        - env:
+          - name: ES_HOST
+            value: logging-es
+          - name: ES_PORT
+            value: "9200"
+          - name: KIBANA_MEMORY_LIMIT
+            valueFrom:
+              resourceFieldRef:
+                containerName: kibana
+                divisor: "0"
+                resource: limits.memory
+          image: ${REGISTRY_NAME}/openshift3/logging-kibana:v3.5
+          imagePullPolicy: Always
+          name: kibana
+          resources:
+            limits:
+              memory: 2Gi
+            requests:
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /etc/kibana/keys
+            name: kibana
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        serviceAccount: aggregated-logging-kibana
+        serviceAccountName: aggregated-logging-kibana
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: kibana
+          secret:
+            defaultMode: 420
+            secretName: logging-kibana
+    test: false
+    triggers:
+    - type: ConfigChange
+parameters:
+- name: REGISTRY_NAME
+  value: registry.access.redhat.com
+labels:
+  logging: efk-template
